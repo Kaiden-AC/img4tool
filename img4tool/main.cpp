@@ -143,6 +143,14 @@ void cmd_help(){
            );
 }
 
+void saveToFile(const char *filePath, const void *buf, size_t bufSize){
+    if (strcmp(filePath, "-") == 0) {
+        write(STDERR_FILENO, buf, bufSize);
+    }else{
+        tihmstar::writeFile(filePath, buf, bufSize);
+    }
+}
+
 MAINFUNCTION
 int main_r(int argc, const char * argv[]) {
     printf("%s\n",version());
@@ -406,7 +414,7 @@ int main_r(int argc, const char * argv[]) {
                 failedToFindKeys:;
                 }
                 payload = getPayloadFromIM4P(file, decryptIv, decryptKey, &compression);
-                tihmstar::writeFile(outFile, payload.payload(), payload.payloadSize());
+                saveToFile(outFile, payload.payload(), payload.payloadSize());
 
                 if (compression) {
                     printf("Extracted (and uncompressed %s) IM4P payload to %s\n",compression,outFile);
@@ -418,19 +426,19 @@ int main_r(int argc, const char * argv[]) {
                 //extract im4p an im4m from img4
                 if (im4pFile) {
                     auto im4p = getIM4PFromIMG4(file);
-                    tihmstar::writeFile(im4pFile, im4p.buf(), im4p.size());
+                    saveToFile(im4pFile, im4p.buf(), im4p.size());
                     printf("Extracted IM4P to %s\n",im4pFile);
                     didExtract = true;
                 }
                 if (im4mFile) {
                     auto im4m = getIM4MFromIMG4(file);
-                    tihmstar::writeFile(im4mFile, im4m.buf(), im4m.size());
+                    saveToFile(im4mFile, im4m.buf(), im4m.size());
                     printf("Extracted IM4M to %s\n",im4mFile);
                     didExtract = true;
                 }
             }else if (isIM4M(file)){
                 retassure(im4mFile, "requested extracting IM4M from SHSH but no output path was given");
-                tihmstar::writeFile(im4mFile, file.buf(), file.size());
+                saveToFile(im4mFile, file.buf(), file.size());
                 printf("Saved IM4M to %s\n",im4mFile);
                 didExtract = true;
             }
@@ -489,7 +497,7 @@ int main_r(int argc, const char * argv[]) {
                 }
             }
             
-            tihmstar::writeFile(outFile, im4p.buf(), im4p.size());
+            saveToFile(outFile, im4p.buf(), im4p.size());
             printf("Created IM4P file at %s\n",outFile);
         } else if (flags & FLAG_RENAME){
             retassure(im4pType, "typen required");
@@ -518,7 +526,7 @@ int main_r(int argc, const char * argv[]) {
                 if (im4p.size() > 10) newimg4 = appendIM4RToIMG4(newimg4, im4p);
                 im4p = newimg4;
             }
-            tihmstar::writeFile(outFile, im4p.buf(), im4p.size());
+            saveToFile(outFile, im4p.buf(), im4p.size());
             if (img4.size() > 10) {
                 printf("Saved new renamed IMG4 to %s\n",outFile);
             }else{
@@ -581,7 +589,7 @@ int main_r(int argc, const char * argv[]) {
             }
 
             retassure((plist_to_xml(newshsh, &xml, &xmlSize),xml), "failed to convert plist to xml");
-            tihmstar::writeFile(shshFile, xml, xmlSize);
+            saveToFile(shshFile, xml, xmlSize);
             printf("Saved IM4M to %s\n",shshFile);
         } else if (flags & FLAG_VERIFY){
             //verify
@@ -696,7 +704,7 @@ int main_r(int argc, const char * argv[]) {
             img4 = appendIM4RToIMG4(img4, getIM4RFromGenerator(bnch));
         }
 
-        tihmstar::writeFile(outFile, img4.buf(), img4.size());
+        saveToFile(outFile, img4.buf(), img4.size());
         printf("Created IMG4 file at %s\n",outFile);
     }
     else{
