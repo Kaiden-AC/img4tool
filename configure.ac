@@ -39,8 +39,8 @@ CFLAGS+=" -std=c11"
 # Versioning.
 
 # Checks for libraries.
-LIBGENERAL_REQUIRES_STR="libgeneral >= 75"
-LIBFWKEYFETCH_REQUIRES_STR="libfwkeyfetch >= 1"
+LIBGENERAL_REQUIRES_STR="libgeneral >= 92"
+LIBFWKEYFETCH_REQUIRES_STR="libfwkeyfetch >= 13"
 LIBPLIST_REQUIRES_STR="libplist-2.0 >= 2.3.0"
 OPENSSL_REQUIRES_STR="openssl >= 0.9.8"
 
