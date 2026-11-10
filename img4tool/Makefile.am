@@ -36,6 +36,11 @@ libimg4tool_la_SOURCES = 	ASN1DERElement.cpp \
 img4tool_CFLAGS = $(AM_CFLAGS)
 img4tool_CXXFLAGS = $(AM_CXXFLAGS)
 img4tool_LDFLAGS = $(AM_LDFLAGS)
-img4tool_LDADD = libimg4tool.la libgeneral.a libfwkeyfetch.a libfragmentzip.a libjssy.a
+# Link executables against the static libimg4tool.a (not libimg4tool.la) so
+# the binaries are self-contained single files with no libimg4tool.so
+# dependency and no libtool wrapper script.
+img4tool_LDADD = .libs/libimg4tool.a libgeneral.a libfwkeyfetch.a libfragmentzip.a libjssy.a
+# Build the libtool library (and thus .libs/libimg4tool.a) before linking.
+img4tool_DEPENDENCIES = libimg4tool.la
 
 img4tool_SOURCES = 	main.cpp
