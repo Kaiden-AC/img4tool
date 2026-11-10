@@ -1,0 +1,12 @@
+[submodule "external/libgeneral"]
+	path = external/libgeneral
+	url = https://github.com/tihmstar/libgeneral
+[submodule "external/libfwkeyfetch"]
+	path = external/libfwkeyfetch
+	url = https://github.com/Kaiden-AC/libfwkeyfetch
+[submodule "external/jssy"]
+	path = external/jssy
+	url = https://github.com/tihmstar/jssy.git
+[submodule "external/libfragmentzip"]
+	path = external/libfragmentzip
+	url = https://github.com/tihmstar/libfragmentzip

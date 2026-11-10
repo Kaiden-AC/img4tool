@@ -8,11 +8,23 @@ Install dependencies:
   * automake
   * libtool
   * pkg-config
-* External
+* External (system, via pkg-config)
   * openssl
   * libplist-2.0
-* tihmstar's tools
+  * libcurl (for libfragmentzip/libfwkeyfetch)
+  * zlib (for libfragmentzip)
+  * libcompression or liblzfse (unless --without-compression)
+* Vendored submodules (statically linked — no system install needed):
   * [libgeneral](https://github.com/tihmstar/libgeneral)
+  * [libfwkeyfetch](https://github.com/Kaiden-AC/libfwkeyfetch) (Kaiden-AC fork, with its own vendored jssy/libfragmentzip/libgeneral for standalone builds)
+  * [libfragmentzip](https://github.com/tihmstar/libfragmentzip)
+  * [jssy](https://github.com/tihmstar/jssy.git)
+
+Fetch the vendored submodules first:
+
+```bash
+git submodule update --init --recursive
+```
 
 To compile run:
 

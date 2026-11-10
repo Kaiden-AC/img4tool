@@ -39,17 +39,23 @@ CFLAGS+=" -std=c11"
 # Versioning.
 
 # Checks for libraries.
-LIBGENERAL_REQUIRES_STR="libgeneral >= 92"
-LIBFWKEYFETCH_REQUIRES_STR="libfwkeyfetch >= 13"
+# libgeneral + libfwkeyfetch + libfragmentzip + libjssy are vendored as git
+# submodules under external/ and built statically, so no system pkg-config
+# install is required for them.
+# (https://github.com/tihmstar/libgeneral,
+#  https://github.com/Kaiden-AC/libfwkeyfetch,
+#  https://github.com/tihmstar/libfragmentzip,
+#  https://github.com/tihmstar/jssy.git)
+# Standardized libs (libplist, openssl, libcurl, zlib) remain via pkg-config.
 LIBPLIST_REQUIRES_STR="libplist-2.0 >= 2.3.0"
 OPENSSL_REQUIRES_STR="openssl >= 0.9.8"
+LIBCURL_REQUIRES_STR="libcurl >= 8.5.0"
+LIBZ_REQUIRES_STR="zlib >= 1.0"
 
-PKG_CHECK_MODULES(libgeneral, $LIBGENERAL_REQUIRES_STR)
-PKG_CHECK_MODULES(libfwkeyfetch, $LIBFWKEYFETCH_REQUIRES_STR, have_libfwkeyfetch=yes, have_libfwkeyfetch=no)
 PKG_CHECK_MODULES(libplist, $LIBPLIST_REQUIRES_STR, have_plist=yes, have_plist=no)
 PKG_CHECK_MODULES(openssl, $OPENSSL_REQUIRES_STR, have_openssl=yes, have_openssl=no)
-
-AC_SUBST([libgeneral_requires], [$LIBGENERAL_REQUIRES_STR])
+PKG_CHECK_MODULES(libcurl, $LIBCURL_REQUIRES_STR)
+PKG_CHECK_MODULES(zlib, $LIBZ_REQUIRES_STR)
 
 AC_ARG_ENABLE([debug],
             [AS_HELP_STRING([--enable-debug],
@@ -65,7 +71,7 @@ AC_ARG_ENABLE([separttool],
 
 AC_ARG_WITH([libfwkeyfetch],
             [AS_HELP_STRING([--without-libfwkeyfetch],
-            [do not build with libfwkeyfetch @<:@default=yes (if available)@:>@])],
+            [do not build with libfwkeyfetch (vendored, default is yes) @<:@default=yes@:>@])],
             [with_libfwkeyfetch=no],
             [with_libfwkeyfetch=yes])
 
@@ -89,20 +95,12 @@ AC_ARG_WITH([compression],
 
 AM_CONDITIONAL(ENABLE_SEPARTTOOL, test x$enable_separttool == xtrue)
 
-if test "x$have_libfwkeyfetch" == "xyes"; then
-  if test "x$with_libfwkeyfetch" == "xyes"; then
-    AC_DEFINE(HAVE_LIBFWKEYFETCH, 1, [Define if you have libfwkeyfetch])
-    AC_SUBST([HEADER_HAVE_LIBFWKEYFETCH], [1])
-    AC_SUBST([libfwkeyfetch_requires], [$LIBFWKEYFETCH_REQUIRES_STR])
-    AC_SUBST(libfwkeyfetch_CFLAGS)
-    AC_SUBST(libfwkeyfetch_LIBS)
-  else
-    echo "*** Note: libfwkeyfetch has been disabled ***"
-    AC_SUBST([HEADER_HAVE_LIBFWKEYFETCH], [0])
-  fi
+# libfwkeyfetch is vendored, so it is always available when requested.
+if test "x$with_libfwkeyfetch" == "xyes"; then
+  AC_DEFINE(HAVE_LIBFWKEYFETCH, 1, [Define if you have libfwkeyfetch])
+  AC_SUBST([HEADER_HAVE_LIBFWKEYFETCH], [1])
 else
-  echo "*** Note: libfwkeyfetch is unavailable ***"
-  with_libfwkeyfetch="no"
+  echo "*** Note: libfwkeyfetch has been disabled ***"
   AC_SUBST([HEADER_HAVE_LIBFWKEYFETCH], [0])
 fi
 
@@ -151,7 +149,38 @@ if test "$debug_build" = true; then
 fi
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h stdint.h stdlib.h string.h unistd.h winsock.h])
+AC_CHECK_HEADERS([arpa/inet.h byteswap.h endian.h stdint.h stdlib.h string.h sys/param.h unistd.h winsock.h])
+
+# libgeneral headers are generated from .in files (vendored submodule).
+# ByteOrder.hpp needs the following substitutions (mirrors libgeneral's
+# own configure.ac); undeclared fall back to __builtin_bswap in the header.
+if test "x$ac_cv_header_arpa_inet_h" = "xyes"; then
+  AC_SUBST([HEADER_HAVE_ARPA_INET_H], [1])
+else
+  AC_SUBST([HEADER_HAVE_ARPA_INET_H], [0])
+fi
+if test "x$ac_cv_header_byteswap_h" = "xyes"; then
+  AC_SUBST([HEADER_HAVE_BYTESWAP_H], [1])
+else
+  AC_SUBST([HEADER_HAVE_BYTESWAP_H], [0])
+fi
+if test "x$ac_cv_header_endian_h" = "xyes"; then
+  AC_SUBST([HEADER_HAVE_ENDIAN_H], [1])
+else
+  AC_SUBST([HEADER_HAVE_ENDIAN_H], [0])
+fi
+if test "x$ac_cv_header_winsock_h" = "xyes"; then
+  AC_SUBST([HEADER_HAVE_WINSOCK_H], [1])
+else
+  AC_SUBST([HEADER_HAVE_WINSOCK_H], [0])
+fi
+AC_CHECK_DECLS([htonll], [AC_SUBST([HAVE_DECL_HTONLL], [1])], [AC_SUBST([HAVE_DECL_HTONLL], [0])], [[#include <arpa/inet.h>]])
+AC_CHECK_DECLS([htole64],  [AC_SUBST([HAVE_DECL_HTOLE64], [1])],  [AC_SUBST([HAVE_DECL_HTOLE64], [0])],  [[#include <endian.h>]])
+AC_CHECK_DECLS([htole32],  [AC_SUBST([HAVE_DECL_HTOLE32], [1])],  [AC_SUBST([HAVE_DECL_HTOLE32], [0])],  [[#include <endian.h>]])
+AC_CHECK_DECLS([htole16],  [AC_SUBST([HAVE_DECL_HTOLE16], [1])],  [AC_SUBST([HAVE_DECL_HTOLE16], [0])],  [[#include <endian.h>]])
+AC_CHECK_DECLS([htons], [AC_SUBST([HAVE_DECL_HTONS], [1])], [AC_SUBST([HAVE_DECL_HTONS], [0])], [[#include <arpa/inet.h>]])
+AC_CHECK_DECLS([htonl], [AC_SUBST([HAVE_DECL_HTONL], [1])], [AC_SUBST([HAVE_DECL_HTONL], [0])], [[#include <arpa/inet.h>]])
+AC_SUBST([LIBGENERAL_CLEANUP_IS_DISABLED], [0])
 
 # Check for libraries
 if test "x$with_compression" == "xyes"; then
@@ -183,6 +212,8 @@ AC_CONFIG_FILES([Makefile
                  include/Makefile
                  libimg4tool.pc
                  include/img4tool/img4tool.hpp
+                 external/libgeneral/include/libgeneral/macros.h
+                 external/libgeneral/include/libgeneral/ByteOrder.hpp
                  img4tool/Makefile
                  separttool/Makefile])
 
