@@ -12,7 +12,7 @@ separttool_LDFLAGS = $(AM_LDFLAGS)
 # Link against static libimg4tool.a (single self-contained binary,
 # no libimg4tool.so dependency / no libtool wrapper).
 separttool_LDADD = ../img4tool/.libs/libimg4tool.a ../img4tool/libgeneral.a ../img4tool/libfwkeyfetch.a ../img4tool/libfragmentzip.a ../img4tool/libjssy.a
-separttool_DEPENDENCIES = ../img4tool/libimg4tool.la
+separttool_DEPENDENCIES = ../img4tool/libimg4tool.la ../img4tool/libgeneral.a ../img4tool/libfwkeyfetch.a ../img4tool/libfragmentzip.a ../img4tool/libjssy.a
 separttool_SOURCES = 	main.cpp
 
 endif #ENABLE_SEPARTTOOL

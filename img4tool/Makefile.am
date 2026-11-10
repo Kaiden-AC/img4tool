@@ -40,7 +40,8 @@ img4tool_LDFLAGS = $(AM_LDFLAGS)
 # the binaries are self-contained single files with no libimg4tool.so
 # dependency and no libtool wrapper script.
 img4tool_LDADD = .libs/libimg4tool.a libgeneral.a libfwkeyfetch.a libfragmentzip.a libjssy.a
-# Build the libtool library (and thus .libs/libimg4tool.a) before linking.
-img4tool_DEPENDENCIES = libimg4tool.la
+# Build the libs before linking (required for parallel make; otherwise the
+# linker can run before libgeneral.a etc. are archived).
+img4tool_DEPENDENCIES = libimg4tool.la libgeneral.a libfwkeyfetch.a libfragmentzip.a libjssy.a
 
 img4tool_SOURCES = 	main.cpp
