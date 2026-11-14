@@ -149,7 +149,10 @@ if test "$debug_build" = true; then
 fi
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h byteswap.h endian.h stdint.h stdlib.h string.h sys/param.h unistd.h winsock.h])
+# fcntl.h/sys/stat.h/unistd.h are required by vendored libgeneral (Utils.cpp
+# readFile/writeFile) — without HAVE_FCNTL_H it throws
+# "Compiled without file support".
+AC_CHECK_HEADERS([arpa/inet.h byteswap.h endian.h fcntl.h stdint.h stdlib.h string.h sys/param.h sys/stat.h unistd.h winsock.h])
 
 # libgeneral headers are generated from .in files (vendored submodule).
 # ByteOrder.hpp needs the following substitutions (mirrors libgeneral's
